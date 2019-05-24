@@ -12,27 +12,27 @@
   </property>
   <property>
     <name>yarn.resourcemanager.address</name>
-    <value>node01:8032</value>
+    <value>bigdata-2:8032</value>
   </property>
   <property>
     <name>yarn.resourcemanager.admin.address</name>
-    <value>node01:8033</value>
+    <value>bigdata-2:8033</value>
   </property>
   <property>
     <name>yarn.resourcemanager.scheduler.address</name>
-    <value>node01:8030</value>
+    <value>bigdata-2:8030</value>
   </property>
   <property>
     <name>yarn.resourcemanager.resource-tracker.address</name>
-    <value>node01:8031</value>
+    <value>bigdata-2:8031</value>
   </property>
   <property>
     <name>yarn.resourcemanager.webapp.address</name>
-    <value>node01:8088</value>
+    <value>bigdata-2:8088</value>
   </property>
   <property>
     <name>yarn.resourcemanager.webapp.https.address</name>
-    <value>node01:8090</value>
+    <value>bigdata-2:8090</value>
   </property>
   <property>
     <name>yarn.resourcemanager.client.thread-count</name>
@@ -48,7 +48,7 @@
   </property>
   <property>
     <name>yarn.scheduler.minimum-allocation-mb</name>
-    <value>512</value>
+    <value>1024</value>
   </property>
   <property>
     <name>yarn.scheduler.increment-allocation-mb</name>
@@ -56,7 +56,7 @@
   </property>
   <property>
     <name>yarn.scheduler.maximum-allocation-mb</name>
-    <value>2048</value>
+    <value>8192</value>
   </property>
   <property>
     <name>yarn.scheduler.minimum-allocation-vcores</name>
@@ -68,7 +68,7 @@
   </property>
   <property>
     <name>yarn.scheduler.maximum-allocation-vcores</name>
-    <value>4</value>
+    <value>8</value>
   </property>
   <property>
     <name>yarn.resourcemanager.amliveliness-monitor.interval-ms</name>
@@ -105,6 +105,10 @@
   <property>
     <name>yarn.resourcemanager.scheduler.class</name>
     <value>org.apache.hadoop.yarn.server.resourcemanager.scheduler.fair.FairScheduler</value>
+  </property>
+  <property>
+    <name>yarn.scheduler.capacity.resource-calculator</name>
+    <value>org.apache.hadoop.yarn.util.resource.DefaultResourceCalculator</value>
   </property>
   <property>
     <name>yarn.resourcemanager.max-completed-applications</name>

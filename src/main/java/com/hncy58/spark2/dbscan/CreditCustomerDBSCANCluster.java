@@ -1,12 +1,9 @@
 package com.hncy58.spark2.dbscan;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
@@ -21,6 +18,7 @@ import com.hncy58.spark.dbscan.distance.GEODistance;
 import com.hncy58.spark.dbscan.spatial.Point;
 import com.hncy58.spark.dbscan.spatial.rdd.PartitioningSettings;
 import com.hncy58.spark.dbscan.util.io.IOHelper;
+import com.hncy58.spark2.dbscan.invoker.MsgSendInvoker;
 
 public class CreditCustomerDBSCANCluster {
 
@@ -92,66 +90,62 @@ public class CreditCustomerDBSCANCluster {
 				.set("spark.sql.crossJoin.enabled", "true")
 				;
 
-		SparkContext sc = new SparkContext(conf);
-		JavaSparkContext jsc = new JavaSparkContext(sc);
+		SparkContext sc = null;
+		JavaSparkContext jsc = null;
+		long start;
 		
-		long start = System.currentTimeMillis();
-		List<Map<String, Object>> list = ImpalaJDBC.queryForList(impalaUrl, sql);
-		
-		if(list.isEmpty() || list.size() < custCnt) {
-			System.out.println("impala query ret is empty or little than " + custCnt);
-		} else {
-			System.out.println("impala query ret size:" + list.size());
-			
-			JavaRDD<Point> dsPoints = jsc.parallelize(list).map(map -> {
-				return new Point(map.get("cert_id").toString(), new double[] {Double.valueOf(map.get("lbs_latitude").toString()), Double.valueOf(map.get("lbs_longitude").toString()) });
-			});
-			// 聚类算法配置
-			DbscanSettings clusteringSettings = new DbscanSettings().withEpsilon(distance).withNumberOfPoints(custCnt);
-			clusteringSettings.withTreatBorderPointsAsNoise(true);
-			clusteringSettings.withDistanceMeasure(new GEODistance()); // 修改为GEO距离计算
+		try {
+			sc = new SparkContext(conf);
+			jsc = new JavaSparkContext(sc);
 			
 			start = System.currentTimeMillis();
-			// 训练数据模型
-			DbscanModel model = Dbscan.train(dsPoints.rdd(), clusteringSettings,
-					new PartitioningSettings(PartitioningSettings.DefaultNumberOfSplitsAlongEachAxis(),
-							PartitioningSettings.DefaultNumberOfLevels(), PartitioningSettings.DefaultNumberOfPointsInBox(),
-							PartitioningSettings.DefaultNumberOfSplitsWithinPartition()));
-			System.out.println("model trained started, used " + (System.currentTimeMillis() - start)
-					+ " ms.========================================");
+			List<Map<String, Object>> list = ImpalaJDBC.queryForList(impalaUrl, sql);
 			
-			// 打印结果
-//		model.allPoints().toJavaRDD().foreach(p -> System.out.println(p.id() + " -> " + p));
-			List<Point> pointList = model.allPoints().toJavaRDD().collect();
-			final Map<Long, List<Point>> points = new HashMap<Long, List<Point>>();
-			pointList.forEach(p -> {
-				if(points.containsKey(p.clusterId())) {
-					points.get(p.clusterId()).add(p);
-				} else {
-					List<Point> l = new ArrayList<Point>();
-					l.add(p);
-					points.put(p.clusterId(), l);
-				}
-			});
-			
-			for(Entry<Long, List<Point>> entry : points.entrySet()) {
-				System.out.println(entry.getKey() + " size " + entry.getValue().size());
+			if(list.isEmpty() || list.size() < custCnt) {
+				System.out.println("impala query ret is empty or little than " + custCnt);
+			} else {
+				System.out.println("impala query ret size:" + list.size());
+				
+				JavaRDD<Point> dsPoints = jsc.parallelize(list).map(map -> {
+					return new Point(map.get("cert_id").toString(), new double[] {Double.valueOf(map.get("lbs_latitude").toString()), Double.valueOf(map.get("lbs_longitude").toString()) });
+				});
+				// 聚类算法配置
+				DbscanSettings clusteringSettings = new DbscanSettings().withEpsilon(distance).withNumberOfPoints(custCnt);
+				clusteringSettings.withTreatBorderPointsAsNoise(true);
+				clusteringSettings.withDistanceMeasure(new GEODistance()); // 修改为GEO距离计算
+				
+				start = System.currentTimeMillis();
+				// 训练数据模型
+				DbscanModel model = Dbscan.train(dsPoints.rdd(), clusteringSettings,
+						new PartitioningSettings(PartitioningSettings.DefaultNumberOfSplitsAlongEachAxis(),
+								PartitioningSettings.DefaultNumberOfLevels(), PartitioningSettings.DefaultNumberOfPointsInBox(),
+								PartitioningSettings.DefaultNumberOfSplitsWithinPartition()));
+				System.out.println("model trained started, used " + (System.currentTimeMillis() - start)
+						+ " ms.========================================");
+				
+				//	聚类结果回调
+				System.out.println("invoker ret:" + new MsgSendInvoker().invoke(model.allPoints().toJavaRDD().collect()));
+				//	保存到文件
+				saveToFile(sc, model, fileProtocolPrefix, outPath + "/" + now);
 			}
-			
-			// 删除输出目录
-			IOHelper.deleteOutPath(sc, fileProtocolPrefix, outPath + "/" + now);
-			
-			//	保存结果到文件
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
 			start = System.currentTimeMillis();
-			IOHelper.saveClusteringResult(model, fileProtocolPrefix + outPath + "/" + now);
-			System.out.println("model saved, used " + (System.currentTimeMillis() - start)
+			jsc.close();
+			sc.stop();
+			System.out.println("sparkcontext stoped, used " + (System.currentTimeMillis() - start)
 					+ " ms.========================================");
 		}
-		
-		start = System.currentTimeMillis();
-		jsc.close();
-		sc.stop();
-		System.out.println("sparkcontext stoped, used " + (System.currentTimeMillis() - start)
+	}
+
+	private static void saveToFile(SparkContext sc, DbscanModel model, String protocolPrefix, String path) {
+		// 删除输出目录
+		IOHelper.deleteOutPath(sc, fileProtocolPrefix, path);
+		//	保存结果到文件
+		long start = System.currentTimeMillis();
+		IOHelper.saveClusteringResult(model, fileProtocolPrefix + path);
+		System.out.println("model saved, used " + (System.currentTimeMillis() - start)
 				+ " ms.========================================");
 	}
 }

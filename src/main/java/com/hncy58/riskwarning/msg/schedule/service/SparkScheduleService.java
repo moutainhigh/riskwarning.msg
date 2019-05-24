@@ -1,5 +1,7 @@
 package com.hncy58.riskwarning.msg.schedule.service;
 
+import javax.annotation.Resource;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +31,9 @@ public class SparkScheduleService {
 	 */
 	@Value("${dbscan.file.protocol.prefix}")
 	private String fileProtocolPrefix;
+	
+	@Resource
+	SparkSubmitApp sparkSubmit;
 
 	// 进件相关配置
 	@Value("${dbscan.entry.appName:EntryCustomerDBSCANCluster}")
@@ -68,9 +73,8 @@ public class SparkScheduleService {
 		log.info("sparkEntryDBScanSubmit start----------------------");
 		log.info("impalaUrl:{}, fileProtocolPrefix:{}", impalaUrl, fileProtocolPrefix);
 		String[] args = new String[]{entryAppName, impalaUrl, entryDistance, entryCustCnt, entrySecondsDiffToNow, entryEventCode, entryOnline, entryOutPath, fileProtocolPrefix};
-		
 		try {
-			SparkSubmitApp.main(args);
+			sparkSubmit.submit(args);
 		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
@@ -80,10 +84,10 @@ public class SparkScheduleService {
 	public void sparkCreditDBScanSubmit() {
 		log.info("sparkCreditDBScanSubmit start----------------------");
 		log.info("impalaUrl:{}, fileProtocolPrefix:{}", impalaUrl, fileProtocolPrefix);
+		String[] args = new String[]{creditAppName, impalaUrl, creditDistance, creditCustCnt, creditSecondsDiffToNow, creditEventCode, creditOnline, creditOutPath, fileProtocolPrefix};
 		try {
-			String[] args = new String[]{creditAppName, impalaUrl, creditDistance, creditCustCnt, creditSecondsDiffToNow, creditEventCode, creditOnline, creditOutPath, fileProtocolPrefix};
-			SparkSubmitApp.main(args);
-		} catch (Exception e) {
+			sparkSubmit.submit(args);
+			} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 		log.info("sparkCreditDBScanSubmit end----------------------");

@@ -2,7 +2,7 @@ server:
   port: 9000
 
 config:
-  path: C:/dev/git/riskwarning.msg/src/main/resources/app.properties
+  path: D:/dev/svn/bigdata1/code/riskwarning-sms/src/main/resources/app.properties
 
 # 定时调度池配置
 schedule:

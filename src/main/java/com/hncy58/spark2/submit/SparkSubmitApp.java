@@ -1,9 +1,12 @@
 package com.hncy58.spark2.submit;
 
-import java.io.IOException;
 import java.util.HashMap;
 
 import org.apache.spark.launcher.SparkLauncher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
 /**
  * 应用程序内部提交Spark任务
@@ -15,39 +18,107 @@ import org.apache.spark.launcher.SparkLauncher;
  * @date 2019年5月21日 上午11:43:36
  *
  */
+@Service
 public class SparkSubmitApp {
+	
+	private static final Logger log = LoggerFactory.getLogger(SparkSubmitApp.class);
+	
 	/**
-	 * 是否启动
+	 * spark执行用户，默认为hdfs
 	 */
-	public static void main(String[] args) {
+	@Value("${spark.executor.user:hdfs}")
+	private String sparkExecUser;
+	
+	@Value("${hadoop.conf.dir}")
+	private String hadoopConfDir;
+	
+	@Value("${yarn.conf.dir}")
+	private String yarnConfDir;
+	
+	@Value("${spark.home}")
+	private String sparkHome;
+	
+	@Value("${java.home}")
+	private String javaHome;
 
-		String execUser = "hdfs";
-		String appRes = "./riskwarning.msg-0.0.1.original.jar";
-		String mainClass = "com.hncy58.spark2.dbscan.DBSCANCluster";
-		String deployMode = "cluster";
-		String master = "yarn";
-		String appName = SparkSubmitApp.class.getSimpleName();
+	@Value("${spark.driver.cores}")
+	private String driverCores;
+	
+	@Value("${spark.driver.memory}")
+	private String driverMemory;
+	
+	@Value("${spark.executor.cores}")
+	private String executorCores;
+	
+	@Value("${spark.executor.memory}")
+	private String executorMemory;
+	
+	@Value("${spark.num.executors}")
+	private String numExecutors;
+
+	@Value("${spark.cores.max}")
+	private String coresMax;
+	
+	@Value("${spark.main.res.path}")
+	private String appRes;
+	
+	@Value("${spark.master:yarn}")
+	private String master;
+	
+	@Value("${spark.deploy.mode:cluster}")
+	private String deployMode;
+
+	@Value("${spark.executer.files}")
+	private String files;
+	
+	@Value("${spark.executer.jars}")
+	private String jars;
+	
+	private String mainClass = "";
+	
+	String appName = SparkSubmitApp.class.getSimpleName();
+	
+	public void submit(String[] args) {
 		
-		if(args.length > 0) {
-			mainClass = args[0].trim();
-			appName = mainClass;
-		}
+		if(args.length < 1) {
+			log.error("main class must be seted.");
+			return;
+		} 
 		
-		System.out.println("main class:" + mainClass);
+		mainClass = args[0].trim();
+		appName = mainClass;
+		
+		log.info("main class:" + mainClass);
 		
 		HashMap<String, String> map = new HashMap<String, String>();
-
-		// 通过单独的spark.env文件进行定义
-		// map.put("HADOOP_CONF_DIR", "/etc/hadoop/conf");
-		// map.put("YARN_CONF_DIR", "/etc/hadoop/conf");
-		// map.put("SPARK_CONF_DIR", "/etc/spark/conf");
-		// map.put("SPARK_HOME",
-		// "/opt/cloudera/parcels/CDH-6.0.1-1.cdh6.0.1.p0.590678/lib/spark");
-		// map.put("JAVA_HOME", "/usr/java/jdk1.8.0_141-cloudera");
-
-		// 设置执行器任务执行用户
-		map.put("HADOOP_USER_NAME", execUser);
 		
+		// 生产环境通过单独的spark.env文件进行定义
+		String tmpEvn = System.getenv("HADOOP_CONF_DIR");
+		if(tmpEvn == null || "".equals(tmpEvn)) {
+			map.put("HADOOP_CONF_DIR", hadoopConfDir);
+		}
+		
+		tmpEvn = System.getenv("YARN_CONF_DIR");
+		if(tmpEvn == null || "".equals(tmpEvn)) {
+			map.put("YARN_CONF_DIR", yarnConfDir);
+		}
+		
+		tmpEvn = System.getenv("SPARK_HOME");
+		if(tmpEvn == null || "".equals(tmpEvn)) {
+			map.put("SPARK_HOME", sparkHome);
+		}
+		
+		tmpEvn = System.getenv("JAVA_HOME");
+		if(tmpEvn == null || "".equals(tmpEvn)) {
+			 map.put("JAVA_HOME", javaHome);
+		}
+		
+		// 设置执行器任务执行用户
+		tmpEvn = System.getenv("HADOOP_USER_NAME");
+		if(tmpEvn == null || "".equals(tmpEvn)) {
+			map.put("HADOOP_USER_NAME", sparkExecUser);
+		}
+
 		try {
 			SparkLauncher spark = new SparkLauncher(map)
 					// 设置应用程序名称
@@ -61,40 +132,48 @@ public class SparkSubmitApp {
 					// 设置主应用程序执行类
 					.setMainClass(mainClass)
 					// 设置驱动器执行内存
-					.setConf("spark.driver.memory", "2g")
+					.setConf("spark.driver.memory", driverMemory)
 					// 设置驱动器执行内存
-					.setConf("spark.driver.cores", "2")
+					.setConf("spark.driver.cores", driverCores)
 					// 设置执行器执行核数
-					.setConf("spark.executor.cores", "2")
+					.setConf("spark.executor.cores", executorCores)
 					// 设置执行器执行实例数
-					.setConf("spark.num.executors", "4")
+					.setConf("spark.num.executors", numExecutors)
 					// 设置执行器执行内存
-					.setConf("spark.executor.memory", "1g")
+					.setConf("spark.executor.memory", executorMemory)
 					// 设置执行器执行内存
-					.setConf("spark.cores.max", "16")
-
-					// 可不配置（在安装了spark的节点执行时）
-					// .setConf(SparkLauncher.DRIVER_EXTRA_LIBRARY_PATH,
-					// "/opt/cloudera/parcels/CDH-6.0.1-1.cdh6.0.1.p0.590678/lib/spark/jars/")
-					// .setConf(SparkLauncher.DRIVER_EXTRA_LIBRARY_PATH,
-					// "/opt/cloudera/parcels/CDH-6.0.1-1.cdh6.0.1.p0.590678/jars/")
-					// .setConf("spark.yarn.jars",
-					// "local:/opt/cloudera/parcels/CDH-6.0.1-1.cdh6.0.1.p0.590678/lib/spark/jars/*,local:/opt/cloudera/parcels/CDH-6.0.1-1.cdh6.0.1.p0.590678/lib/spark/hive/*")
+					.setConf("spark.cores.max", coresMax)
+					// 以下配置和上述配置等同
+//					.addSparkArg("--total-executor-cores=10")
+//					.addSparkArg("--num-executors=4")
+//					.addSparkArg("--executor-cores=2")
+//					.addSparkArg("--executor-memory=1g")
+//					.addSparkArg("--driver-memory=2g")
+//					.addSparkArg("--driver-cores=2")
 
 					.setConf("spark.yarn.preserve.staging.files", "true")
 					.setConf("spark.sql.session.timeZone", "Asia/Shanghai").setVerbose(true)
+					;
 
-					// 添加部署应用所需的依赖jar
-					.addJar("./scala-dbscan-0.0.1.jar")
-					.addJar("./kudu-spark2_2.11-1.6.0-cdh6.0.1.jar")
-					.addJar("./ImpalaJDBC41.jar")
-					// 添加部署应用所需的相关文件
-					.addFile("./log4j.properties")
-					// 添加主应用程序参数
-					.addAppArgs(args);
-
+			// 添加部署应用所需的依赖jar
+			if (jars != null && !"".equals(jars.trim())) {
+				for(String jar : jars.split(" *, *")) {
+					spark.addJar(jar);
+				}
+			}
+			
+			// 添加部署应用所需的相关文件
+			if (files != null && !"".equals(files.trim())) {
+				for(String file : files.split(" *, *")) {
+					spark.addFile(file);
+				}
+			}
+			
+			// 添加主应用程序参数
+			spark.addAppArgs(args);
+	
 			// 启动spark任务
-			System.out.println("启动spark任务");
+			log.info("启动spark任务");
 			Process process = spark.launch();
 			InputStreamReaderRunnable inputStreamReaderRunnable = new InputStreamReaderRunnable(
 					process.getInputStream(), "input");
@@ -106,13 +185,11 @@ public class SparkSubmitApp {
 			Thread errorThread = new Thread(errorStreamReaderRunnable, "LogStreamReader error");
 			errorThread.start();
 			
-			System.out.println("Waiting for finish...");
+			log.info("Waiting for finish...");
 			int exitCode = process.waitFor();
-			System.out.println("Finished! Exit code:" + exitCode);
+			log.info("Finished! Exit code:" + exitCode);
 			
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
