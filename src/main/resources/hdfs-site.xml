@@ -16,43 +16,43 @@
   </property>
   <property>
     <name>ha.zookeeper.quorum</name>
-    <value>bigdata-1:2181,bigdata-2:2181,bigdata-3:2181</value>
+    <value>cdh-manager:2181,cdh-master1:2181,cdh-master2:2181</value>
   </property>
   <property>
     <name>dfs.ha.namenodes.hncy58</name>
-    <value>namenode77,namenode95</value>
+    <value>namenode172,namenode444</value>
   </property>
   <property>
-    <name>dfs.namenode.rpc-address.hncy58.namenode77</name>
-    <value>bigdata-1:8020</value>
+    <name>dfs.namenode.rpc-address.hncy58.namenode172</name>
+    <value>cdh-master1:8020</value>
   </property>
   <property>
-    <name>dfs.namenode.servicerpc-address.hncy58.namenode77</name>
-    <value>bigdata-1:8022</value>
+    <name>dfs.namenode.servicerpc-address.hncy58.namenode172</name>
+    <value>cdh-master1:8022</value>
   </property>
   <property>
-    <name>dfs.namenode.http-address.hncy58.namenode77</name>
-    <value>bigdata-1:9870</value>
+    <name>dfs.namenode.http-address.hncy58.namenode172</name>
+    <value>cdh-master1:9870</value>
   </property>
   <property>
-    <name>dfs.namenode.https-address.hncy58.namenode77</name>
-    <value>bigdata-1:9871</value>
+    <name>dfs.namenode.https-address.hncy58.namenode172</name>
+    <value>cdh-master1:9871</value>
   </property>
   <property>
-    <name>dfs.namenode.rpc-address.hncy58.namenode95</name>
-    <value>bigdata-2:8020</value>
+    <name>dfs.namenode.rpc-address.hncy58.namenode444</name>
+    <value>cdh-master2:8020</value>
   </property>
   <property>
-    <name>dfs.namenode.servicerpc-address.hncy58.namenode95</name>
-    <value>bigdata-2:8022</value>
+    <name>dfs.namenode.servicerpc-address.hncy58.namenode444</name>
+    <value>cdh-master2:8022</value>
   </property>
   <property>
-    <name>dfs.namenode.http-address.hncy58.namenode95</name>
-    <value>bigdata-2:9870</value>
+    <name>dfs.namenode.http-address.hncy58.namenode444</name>
+    <value>cdh-master2:9870</value>
   </property>
   <property>
-    <name>dfs.namenode.https-address.hncy58.namenode95</name>
-    <value>bigdata-2:9871</value>
+    <name>dfs.namenode.https-address.hncy58.namenode444</name>
+    <value>cdh-master2:9871</value>
   </property>
   <property>
     <name>dfs.replication</name>
@@ -69,10 +69,6 @@
   <property>
     <name>fs.permissions.umask-mode</name>
     <value>022</value>
-  </property>
-  <property>
-    <name>dfs.client.block.write.locateFollowingBlock.retries</name>
-    <value>7</value>
   </property>
   <property>
     <name>dfs.namenode.acls.enabled</name>

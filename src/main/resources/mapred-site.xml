@@ -60,7 +60,7 @@
   </property>
   <property>
     <name>mapreduce.job.reduces</name>
-    <value>12</value>
+    <value>16</value>
   </property>
   <property>
     <name>mapreduce.task.io.sort.mb</name>
@@ -80,19 +80,19 @@
   </property>
   <property>
     <name>mapreduce.jobhistory.address</name>
-    <value>bigdata-3:10020</value>
+    <value>cdh-master1:10020</value>
   </property>
   <property>
     <name>mapreduce.jobhistory.webapp.address</name>
-    <value>bigdata-3:19888</value>
+    <value>cdh-master1:19888</value>
   </property>
   <property>
     <name>mapreduce.jobhistory.webapp.https.address</name>
-    <value>bigdata-3:19890</value>
+    <value>cdh-master1:19890</value>
   </property>
   <property>
     <name>mapreduce.jobhistory.admin.address</name>
-    <value>bigdata-3:10033</value>
+    <value>cdh-master1:10033</value>
   </property>
   <property>
     <name>mapreduce.framework.name</name>
@@ -104,11 +104,11 @@
   </property>
   <property>
     <name>mapreduce.am.max-attempts</name>
-    <value>2</value>
+    <value>3</value>
   </property>
   <property>
     <name>yarn.app.mapreduce.am.resource.mb</name>
-    <value>1024</value>
+    <value>2048</value>
   </property>
   <property>
     <name>yarn.app.mapreduce.am.resource.cpu-vcores</name>
@@ -136,7 +136,7 @@
   </property>
   <property>
     <name>mapreduce.map.memory.mb</name>
-    <value>0</value>
+    <value>2048</value>
   </property>
   <property>
     <name>mapreduce.map.cpu.vcores</name>
@@ -144,7 +144,7 @@
   </property>
   <property>
     <name>mapreduce.reduce.memory.mb</name>
-    <value>0</value>
+    <value>2048</value>
   </property>
   <property>
     <name>mapreduce.reduce.cpu.vcores</name>
@@ -160,7 +160,7 @@
   </property>
   <property>
     <name>mapreduce.application.framework.path</name>
-    <value>hdfs://hncy58//user/yarn/mapreduce/mr-framework/3.0.0-cdh6.2.0-mr-framework.tar.gz#mr-framework</value>
+    <value>hdfs://hncy58//user/yarn/mapreduce/mr-framework/3.0.0-cdh6.1.0-mr-framework.tar.gz#mr-framework</value>
   </property>
   <property>
     <name>mapreduce.jobhistory.jhist.format</name>
@@ -172,7 +172,7 @@
   </property>
   <property>
     <name>mapreduce.job.redacted-properties</name>
-    <value>fs.s3a.access.key,fs.s3a.secret.key,fs.adl.oauth2.credential,dfs.adls.oauth2.credential,fs.azure.account.oauth2.client.secret</value>
+    <value>fs.s3a.access.key,fs.s3a.secret.key,fs.adl.oauth2.credential,dfs.adls.oauth2.credential</value>
   </property>
   <property>
     <name>mapreduce.job.acl-view-job</name>

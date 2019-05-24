@@ -58,6 +58,18 @@ public class SparkSubmitApp {
 
 	@Value("${spark.cores.max}")
 	private String coresMax;
+
+	@Value("${spark.dynamicAllocation.enabled}")
+	private String dynamicAllocationEnable;
+	
+	@Value("${spark.dynamicAllocation.initialExecutors}")
+	private String initialExecutors;
+	
+	@Value("${spark.dynamicAllocation.minExecutors}")
+	private String minExecutors;
+	
+	@Value("${spark.dynamicAllocation.maxExecutors}")
+	private String maxExecutors;
 	
 	@Value("${spark.main.res.path}")
 	private String appRes;
@@ -139,10 +151,16 @@ public class SparkSubmitApp {
 					.setConf("spark.executor.cores", executorCores)
 					// 设置执行器执行实例数
 					.setConf("spark.num.executors", numExecutors)
+					.setConf("spark.executor.instances", numExecutors)
 					// 设置执行器执行内存
 					.setConf("spark.executor.memory", executorMemory)
 					// 设置执行器执行内存
 					.setConf("spark.cores.max", coresMax)
+					
+					.setConf("spark.dynamicAllocation.enabled", dynamicAllocationEnable)
+					.setConf("spark.dynamicAllocation.initialExecutors", initialExecutors)
+					.setConf("spark.dynamicAllocation.minExecutors", minExecutors)
+					.setConf("spark.dynamicAllocation.maxExecutors", maxExecutors)
 					// 以下配置和上述配置等同
 //					.addSparkArg("--total-executor-cores=10")
 //					.addSparkArg("--num-executors=4")
